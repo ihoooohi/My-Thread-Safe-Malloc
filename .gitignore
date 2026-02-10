@@ -1,0 +1,7 @@
+*.o
+*.so
+thread_tests/thread_test
+thread_tests/thread_test_malloc_free
+thread_tests/thread_test_malloc_free_change_thread
+thread_tests/thread_test_measurement
+.DS_Store
