@@ -1,0 +1,56 @@
+name: C/C++ CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'  # 当推送 v1.0, v2.0.1 等标签时触发
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Compile Library (libmymalloc.so)
+      run: make
+
+    - name: Compile Tests
+      run: |
+        cd thread_tests
+        make
+
+    - name: Run Thread Safety Test
+      run: |
+        cd thread_tests
+        ./thread_test
+
+    - name: Run Measurement Test (Performance)
+      run: |
+        cd thread_tests
+        ./thread_test_measurement
+
+  release:
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build Library
+      run: make
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          libmymalloc.so
+          my_malloc.h
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
